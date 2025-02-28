@@ -2,6 +2,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Millimeters;
+import static edu.wpi.first.units.Units.Rotations;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
@@ -17,17 +19,20 @@ public final class Constants {
         public static final double motorGearRatio = 1.0;
 
         public static final Distance heightTolerance = Inches.of(1);
+        public static final Angle angleTolerance = Rotations.of(0.5);
 
         public static final Distance sprocketRadius = Inches.of(1);
+
+        public static final Distance canrangeOffset = Millimeters.of(128.5875);
 
         public static final int heightSensorID = 22;
         public static final int bottomSensorDIO = 0;
     }
 
     public static final class CoralArmConstants {
-        public static final int pivotMotorID = 31;
-        public static final int pivotEncoderID = 32;
-        public static final int gripperMotorID = 33;
+        public static final int pivotMotorID = 30;
+        public static final int pivotEncoderID = 31;
+        public static final int gripperMotorID = 32;
 
         public static final int pivotMotorAcceleration = 160;
         public static final int pivotMotorCruiseVelocity = 80;

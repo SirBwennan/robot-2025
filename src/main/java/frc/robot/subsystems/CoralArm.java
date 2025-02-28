@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
 import static frc.robot.Constants.CoralArmConstants.*;
 
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
@@ -16,7 +18,6 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -94,23 +95,24 @@ public class CoralArm extends SubsystemBase {
         return current_angle.isNear(goalAngle, pivotMotorTolerance);
     }
 
-    public Command setPivotAngle(Rotation2d goalAngle) {
+    public Command setPivotAngle(Angle goalAngle) {
         return run(() -> pivotMotor.setControl(
-            position_voltage.withPosition(goalAngle.getRotations())));
+            position_voltage.withPosition(goalAngle.in(Rotations))));
     }
 
     public enum CoralArmPreset {
-        Down(Rotation2d.fromDegrees(0)),
-        L4(Rotation2d.fromDegrees(90)),
-        L3(Rotation2d.fromDegrees(125));
+        Initial(Degrees.of(0)), // straight up
+        Intake(Degrees.of(180)), // straight down
+        L4(Degrees.of(90)),
+        L3(Degrees.of(125));
 
-        private final Rotation2d angle;
+        private final Angle angle;
 
-        CoralArmPreset(Rotation2d a) {
+        CoralArmPreset(Angle a) {
             angle = a;
         }
 
-        public Rotation2d getAngle() {
+        public Angle getAngle() {
             return angle;
         }
     }
