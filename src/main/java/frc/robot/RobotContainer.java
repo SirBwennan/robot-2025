@@ -4,11 +4,14 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -20,9 +23,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Elevator;
 
 public class RobotContainer {
+    // initialize subsystems
+    Elevator elevator = Elevator.getInstance();
+    Climber climber = Climber.getInstance();
+
     private LinearVelocity max_speed = TunerConstants.kSpeedAt12Volts; // kSpeedAt12Volts desired top speed
     private AngularVelocity max_angular_rate = RotationsPerSecond.of(0.75); // 3/4 of a rotation per second max angular velocity
 
@@ -41,17 +50,26 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     // Choreo stuff
-    private final AutoFactory autoFactory;
-    private final AutoRoutines autoRoutines;
-    private final AutoChooser autoChooser = new AutoChooser();
+    private final AutoFactory auto_factory;
+    private final AutoRoutines auto_routines;
+    private final AutoChooser auto_chooser = new AutoChooser();
 
     public RobotContainer() {
         // Add Autos
-        autoFactory = drivetrain.createAutoFactory();
-        autoRoutines = new AutoRoutines(autoFactory);
-        autoChooser.addRoutine("SimplePath", autoRoutines::testAuto);
+        auto_factory = drivetrain.createAutoFactory();
+        auto_routines = new AutoRoutines(auto_factory);
+        auto_chooser.addRoutine("Center Cage 2L4", auto_routines::CenterCage2l4);
+        
+        SmartDashboard.putData("Auto Chooser", auto_chooser);
 
         configureBindings();
+    }
+
+    private boolean manual_turtle_mode = false;
+    private double turtle_mode = 1.0;
+    public void updateTurtleMode() {
+        Distance curr_height = elevator.getHeight();
+        turtle_mode = (curr_height.gte(Inches.of(30)) || manual_turtle_mode ) ? 0.357 : 1;
     }
 
     private void configureBindings() {
@@ -59,9 +77,9 @@ public class RobotContainer {
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() -> drive.withVelocityX(-controller.getLeftY() * max_speed.in(MetersPerSecond)) // Drive forward with negative Y (forward)
-                .withVelocityY(-controller.getLeftX() * max_speed.in(MetersPerSecond)) // Drive left with negative X (left)
-                .withRotationalRate(-controller.getRightX() * max_angular_rate.in(RotationsPerSecond)) // Drive counterclockwise with negative X (left)
+            drivetrain.applyRequest(() -> drive.withVelocityX(-controller.getLeftY() * max_speed.in(MetersPerSecond) * turtle_mode) // Drive forward with negative Y (forward)
+                .withVelocityY(-controller.getLeftX() * max_speed.in(MetersPerSecond) * turtle_mode) // Drive left with negative X (left)
+                .withRotationalRate(-controller.getRightX() * max_angular_rate.in(RotationsPerSecond) * turtle_mode) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -83,6 +101,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return autoChooser.selectedCommand();
+        return auto_chooser.selectedCommand();
     }
 }
